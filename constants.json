@@ -1,0 +1,8 @@
+{
+    "debug": false,
+    "task_graph": {
+        "def_color": "white",
+        "done_color": "lightgreen",
+        "selected_color": "lightgray"
+    }
+}
