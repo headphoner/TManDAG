@@ -23,20 +23,23 @@ registerRootComponent(App);
  */
 export default function App(): React.JSX.Element {
 
-  if (constants.debug) console.log("\n\n");
-
   const [ tasks, dispatch ] = useTasks();
   const doneInitializingTasks = useIntializer(dispatch);
-  const schedule = useScheduler(tasks, 1000 * 60 * 60 * 24 * 365); // creates a one-at-a-time schedule
-  useNotifications(tasks, schedule); // gives notifications to the user for when tasks start
+  const schedule = useScheduler(tasks, constants.scheduler.lookahead_millis); // calculate the task schedule
+  useNotifications(tasks, schedule); // gives notifications to the user whenever a task starts
   const [ agendaTaskUUID, setAgendaTaskUUID ] = useState(null);
 
-  // hook to re-render when we reach the start or end of a schedule instance
+  // hook to re-render when we reach the start or end of scheduled instances
   useEffect(() => {
     if (schedule.length > 0) {
+      // update when a scheduled instance starts
       let t1 = schedule[0].during.timeFrom >= Date.now() ?
         setTimeout(() => setAgendaTaskUUID(schedule[0].uuid), schedule[0].during.timeFrom - Date.now()) : null;
+
+      // update when a scheduled instance ends
       let t2 = setTimeout(() => setAgendaTaskUUID(null), schedule[0].during.timeUntil - Date.now());
+
+      // return the clean-up function
       return () => {
         clearTimeout(t1);
         clearTimeout(t2);
@@ -44,34 +47,22 @@ export default function App(): React.JSX.Element {
     }
   });
 
-  // check if the current agenda is valid
+  // ensure current agenda task is valid
   if (agendaTaskUUID && !(agendaTaskUUID in tasks)) {
     setAgendaTaskUUID(null);
   }
 
-  // check if we can set the currently scheduled item (if it exists) for the agenda
+  // if something is schedule for now and we have no agenda task, set it as the agenda task
   if (
     !agendaTaskUUID &&
     schedule.length > 0 &&
     schedule[0].during.timeFrom <= Date.now() &&
     schedule[0].during.timeUntil >= Date.now()
   ) {
-    console.log('set schedule for agenda');
     setAgendaTaskUUID(schedule[0].uuid);
   }
 
-  if (agendaTaskUUID in tasks) console.log(tasks[agendaTaskUUID].name);
-
-
-  if (constants.debug) {
-    for (let itm of schedule) {
-      console.log(`SCHEDULE: ${tasks[itm.uuid].name} from ${new Date(itm.during.timeFrom)}: until ${new Date(itm.during.timeUntil)}`);
-    }
-  }
-
   if (!doneInitializingTasks) return <Text>Loading</Text>;
-
-  // TODO (if any bugs appear) : change same-instant event scheduling so that they're emitted by the same timer
 
   ///
   /// UI Code

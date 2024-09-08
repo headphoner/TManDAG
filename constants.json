@@ -2,7 +2,16 @@
     "debug": false,
     "task_graph": {
         "def_color": "white",
+        "_comment_def_color": "This is the color for a ",
+
         "done_color": "lightgreen",
-        "selected_color": "lightgray"
+        "_comment_done_color": "This is the color of the background for an already completed task",
+
+        "selected_color": "lightgray",
+        "_comment_selected_color": "This is the color of the background for a selected task"
+    },
+    "scheduler": {
+        "lookahead_millis": 31536000000,
+        "_comment_lookahead_millis": "This is the amount of time the scheduler will look ahead, in milliseconds"
     }
 }
